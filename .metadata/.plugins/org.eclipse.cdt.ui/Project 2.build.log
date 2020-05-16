@@ -1,0 +1,27 @@
+21:30:28 **** Incremental Build of configuration Release for project Project 2 ****
+make -j7 all 
+Building file: ../src/initial-main.c
+Invoking: MCU GCC Compiler
+/Users/vishnubanna/ECE362CODE/Project 2/Release
+arm-none-eabi-gcc -mcpu=cortex-m0 -mthumb -mfloat-abi=soft -DSTM32 -DSTM32F0 -DSTM32F051R8Tx -DSTM32F0DISCOVERY -DSTM32F051 -DUSE_STDPERIPH_DRIVER -I"/Users/vishnubanna/ECE362CODE/Project 2/Utilities" -I"/Users/vishnubanna/ECE362CODE/Project 2/StdPeriph_Driver/inc" -I"/Users/vishnubanna/ECE362CODE/Project 2/inc" -I"/Users/vishnubanna/ECE362CODE/Project 2/CMSIS/device" -I"/Users/vishnubanna/ECE362CODE/Project 2/CMSIS/core" -O3 -Wall -fmessage-length=0 -ffunction-sections -c -MMD -MP -MF"src/initial-main.d" -MT"src/initial-main.o" -o "src/initial-main.o" "../src/initial-main.c"
+../src/initial-main.c: In function 'main':
+../src/initial-main.c:497:19: warning: unused variable 'mp' [-Wunused-variable]
+     MIDI_Player * mp = midi_init(midifile);
+                   ^~
+Finished building: ../src/initial-main.c
+ 
+Building target: Project 2.elf
+Invoking: MCU GCC Linker
+arm-none-eabi-gcc -mcpu=cortex-m0 -mthumb -mfloat-abi=soft -T"/Users/vishnubanna/ECE362CODE/Project 2/LinkerScript.ld" -Wl,-Map=output.map -Wl,--gc-sections -o "Project 2.elf" @"objects.list"   -lm
+Finished building target: Project 2.elf
+ 
+/Applications/Xcode.app/Contents/Developer/usr/bin/make --no-print-directory post-build
+Generating binary and Printing size information:
+arm-none-eabi-objcopy -O binary "Project 2.elf" "Project 2.bin"
+arm-none-eabi-size -B "Project 2.elf"
+   text	   data	    bss	    dec	    hex	filename
+  54568	   1088	   2700	  58356	   e3f4	Project 2.elf
+ 
+
+21:30:29 Build Finished (took 348ms)
+

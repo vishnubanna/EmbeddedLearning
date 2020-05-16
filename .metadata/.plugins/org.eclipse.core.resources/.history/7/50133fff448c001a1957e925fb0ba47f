@@ -1,0 +1,44 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdint.h>
+#include <stdlib.h> // for random()
+#include "screen.h"
+#include "tty.h"
+#include "stm32f0xx.h"
+#include "stm32f0_discovery.h"
+
+/********************
+ * Game requirements
+ * memory-screen: 2080/8000
+ * memory-player: 14/8000
+ *******************/
+
+#define BOUNDX 80
+#define BOUNDY 13
+#define FLOOR BOUNDY-2-1
+#define PSIZEX 6
+#define PSIZEY 3
+#define RUNNING 1
+#define SPLASH 0
+
+
+#define PH "(*_*)"
+#define B1 "r)+)v"
+#define L1 " / > "
+
+#define B2 "r)x)v"
+#define L2 " > \\ "
+
+#define DUCK 1
+#define RUN 0
+
+
+
+void init(void);
+void render(void);
+void player_act();
+void update(char action);
+void print_obs();
+void gencure();
+void genobs();
+

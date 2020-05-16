@@ -1,0 +1,114 @@
+/**
+  ******************************************************************************
+  * @file    main.c
+  * @author  Ac6
+  * @version V1.0
+  * @date    01-December-2013
+  * @brief   Default main function.
+  ******************************************************************************
+*/
+#include "stm32f0xx.h"
+#include "stm32f0_discovery.h"
+#include "midi.h"
+#include "game.h"
+
+/********************
+ * Total Flash Memory
+ * memory: 3938/8000
+ *******************/
+
+extern uint8_t midifile[];
+MIDI_Player * mp;
+
+void TIM2_IRQHandler(void)
+{
+	static uint8_t cnt = 0;
+    TIM2->SR &= ~0x1;
+    animate();
+    if (cnt++ == 20){
+    	restart();
+    	cnt = 0;
+    }
+}
+
+//===================================
+// Disable timer 2.  Wait for a key press.
+void freeze(void)
+{
+    TIM2->CR1 &= ~TIM_CR1_CEN;
+    while(!available());
+    getchar();
+    TIM2->CR1 |= TIM_CR1_CEN;
+}
+
+int get_seed(void)
+{
+    return TIM2->CNT;
+}
+
+//============================================================================
+// Enable clock to timer2.
+// Setup prescalar and arr so that the interrupt is triggered every 100ms.
+// Enable the timer 2 interrupt.
+// Start the timer.
+void setup_timer2() {
+    // Enable timer 2 here.
+    // Make it generate an interrupt 8 times per second.
+    // Set the prescaler to 48 so that the free-running
+    // counter goes from 0 ... 124999.
+
+    //... You finish this part
+	RCC -> APB1ENR |= RCC_APB1ENR_TIM2EN;
+	TIM2 -> PSC = 48 - 1;
+	TIM2 -> ARR = 125000 - 1;
+	TIM2 -> DIER |= 1;
+	TIM2 -> CR1 |= 1;
+	//15
+
+	//set priority lower than USART
+//	NVIC -> ISER[0] |= (1<<TIM2_IRQn);
+//	NVIC_SetPriority(TIM2_IRQn,2);
+
+    // Also, make sure TIM2 has lower priority than USART1
+    // by using the NVIC_SetPriority() function.  Use a higher
+    // number (lower priority) than you did for USART1.
+}
+
+void set_priority(){
+	NVIC -> ISER[0] |= (1<<TIM2_IRQn);
+	NVIC_SetPriority(TIM2_IRQn,3);
+
+	NVIC -> ISER[0] |= (1 << USART1_IRQn);
+	NVIC_SetPriority(USART1_IRQn,2);
+
+	NVIC -> ISER[0] |= 1 << DMA1_Channel2_3_IRQn; //un-mask the interrupt
+	NVIC_SetPriority(DMA1_Channel2_3_IRQn, 0); // set to highest priority
+
+	NVIC -> ISER[0] |= (1<<TIM3_IRQn);
+	NVIC_SetPriority(TIM3_IRQn, 1);
+}
+
+void restart(){
+	if(mp -> nexttick >= MAXTICKS){
+		mp = midi_init(midifile);
+	}
+}
+
+int main(void)
+{
+	set_priority();
+	init_music();
+	mp = midi_init(midifile);
+	init_TIM3(10417);
+    tty_init();
+    raw_mode();
+    cursor_off();
+    init();
+    splash();
+    setup_timer2();
+
+	for(;;){
+		asm("wfi");
+	}
+	return 0;
+}

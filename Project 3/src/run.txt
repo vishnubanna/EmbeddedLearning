@@ -1,0 +1,38 @@
+UART PINS: PA9, PA10
+ANLOG OUTPUT: PA4
+
+RUN INSTRUCTIONS: 
+
+for optimal playing 
+1) In system workbench click on the arrow next hammer used to build the binary file
+2) Select Release
+3) click the hammer and generate a .elf Release binary file
+4) click on the down pointing arrow next to the debug button
+5) select debug configuration 
+6) in the window that shows up, select search project
+7) in the new windows look for the section called qualifiers and select the .elf file 
+    preceded by the word Release. so the files that say Release/<name of project>.elf
+8) click the word debug at the bottom left hand corner 
+
+quick playing 
+1) click the debug button 
+
+
+
+PLAY INSTRUCTIONS:
+    Story:  
+        In the Midst of a Global pandemic, an evil Group known as the toads 
+        are throwing out good medicine.You need to catch as much as you can to
+        to save you village. But don't get shot, or you will die trying!
+    
+    Controls:
+        A: move right
+        D: move left
+        W: jump
+        S: duck
+
+    Game Stats:
+        Health starts at a 100, and as you collect cure, you gain Health
+        if you het hit by any 1 of the 3 arrow bullets, each arrow remove 15 Health
+        this means with out dodging the damage from getting shot does is 45 
+        so in order to stay alive you must dogde and collect cure points.

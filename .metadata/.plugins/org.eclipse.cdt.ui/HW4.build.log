@@ -1,0 +1,6 @@
+20:33:52 **** Build of configuration Debug for project HW4 ****
+make -j7 all 
+make: Nothing to be done for `all'.
+
+20:33:53 Build Finished (took 151ms)
+

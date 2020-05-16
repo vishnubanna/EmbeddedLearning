@@ -1,0 +1,316 @@
+#include "game.h"
+
+char scr[BOUNDX][BOUNDY];
+char color[BOUNDX][BOUNDY];
+uint8_t phase = SPLASH;
+uint8_t counter = 1;
+struct {
+	uint8_t ht;
+	uint8_t state_count;
+	uint8_t x;
+	uint8_t y;
+}player;
+
+struct{
+	char x;
+	uint8_t y;
+	uint8_t speed;
+}obs;
+
+struct{
+	char x;
+	uint8_t y;
+	uint8_t speed;
+}cure;
+
+short health;
+char ccol;
+char collected;
+
+void msg(int x, int y, int c, const char *s)
+{
+  int n;
+  int len = strlen(s);
+  for(n=0; n<len && n+x<BOUNDX; n++) {
+    color[x+n][y] = c;
+    scr[x+n][y] = s[n];
+  }
+}
+
+void render(void)
+{
+  int x,y;
+  home();
+  int col = color[0][0];
+  fgbg(col);
+  for(y=0; y<BOUNDY; y++) {
+    setpos(0,y);
+    for(x=0; x<BOUNDX; x++) {
+      if (color[x][y] != col) {
+        col = color[x][y];
+        fgbg(col);
+      }
+      putchar(scr[x][y]);
+    }
+  }
+  fflush(stdout);
+}
+
+void splash(void)
+{
+  clear();
+  int x,y;
+  for(y=0; y<BOUNDY; y++)
+    for(x=0; x<BOUNDX; x++) {
+    	if (y < FLOOR){
+    		scr[x][y] = ' ';
+    		color[x][y] = 0x70;
+    	}else{
+    		scr[x][y] = 'f';
+    		color[x][y] = 0xaa;
+    	}
+    }
+  msg(20,3, 0x0f, "                 ");
+  msg(20,4, 0x0f, "  Press Any Key  ");
+  msg(20,5, 0x0f, "    To Begin     ");
+  msg(20,6, 0x0f, "                 ");
+
+  msg(40,1, 0x0f,  "        Story:       ");
+  msg(40,2, 0x0f,  "  In the Midst of a  ");
+  msg(40,3, 0x0f,  "  Global pandemic,a  ");
+  msg(40,4, 0x0f,  " Group of evil toads ");
+  msg(40,5, 0x0f,  "are throwing out good");
+  msg(40,6, 0x0f,  "  good medicine.You  ");
+  msg(40,7, 0x0f,  "  need to catch as   ");
+  msg(40,8, 0x0f,   " much as you can to  ");
+  msg(40,9, 0x0f,  " to save you village. ");
+  msg(40,10, 0x0f,   " But don't get shot, ");
+  msg(40,11, 0x0f, " or you will die trying ");
+  render();
+}
+
+void init(void)
+{
+  int x,y;
+  for(y=0; y<BOUNDY; y++)
+    for(x=0; x<BOUNDX; x++) {
+    	if (y < FLOOR){
+    		scr[x][y] = ' ';
+    		//color[x][y] = 0xee;
+    		color[x][y] = 0xf0;
+    	}else{
+    		scr[x][y] = 'f';
+    		color[x][y] = 0xaa;
+    	}
+    }
+
+  for(x=0; x<BOUNDX; x++) {
+    if (x==0 || x == BOUNDX-1) {
+      msg(x,0,0xb0,"+");
+      msg(x,BOUNDY-1,0xb0,"+");
+    } else {
+      msg(x,0,0xb0,"-");
+      msg(x,BOUNDY-1,0xb0,"-");
+    }
+  }
+  for(y=1; y<BOUNDY-1; y++) {
+    msg(0,y, 0xb0, "|");
+    msg(79,y, 0xb0, "|");
+  }
+  player.x = 35;
+  player.y = FLOOR - 1;
+  player.ht = 3;
+  player.state_count = 0;
+  health = 100;
+  collected = 0;
+  ccol = 0;
+  player_act();
+  genobs();
+  gencure();
+}
+
+void draw_player(){
+	msg(player.x,player.y - 2, 0xf0, PH);
+	if (player.ht == 3){
+		if (counter % 2 == 0){ // display state1
+			msg(player.x,player.y - 1 , 0x10, B1);
+			//msg(player.x + 2,player.y - 1 , 0x10, "+");
+			msg(player.x,player.y     , 0xe0, L1);
+		}else{// display state2
+			msg(player.x,player.y - 1 , 0x10, B2);
+			//msg(player.x + 2,player.y - 1 , 0x10, "x");
+			msg(player.x,player.y     , 0xe0, L2);
+		}
+	}
+}
+
+void clear_player(){
+	msg(player.x,player.y - 2, 0xf0,  "     ");
+	if (player.ht == 3){
+		if (counter % 2 == 0){ // display state1
+			msg(player.x,player.y - 1 , 0xf0, "     ");
+			msg(player.x,player.y     , 0xf0, "     ");
+		}else{// display state2
+			msg(player.x,player.y - 1 , 0xf0, "     ");
+			msg(player.x,player.y     , 0xf0, "     ");
+		}
+	}else{
+		player.ht = 3;
+		player.y -= 2;
+	}
+}
+
+void genobs(){
+	obs.x = BOUNDX + 4;
+	obs.y = (rand() % (FLOOR - 2) + 2) ;
+	obs.speed = rand() % 5 + 2;
+}
+
+void print_obs(){
+	msg(obs.x,obs.y , 0xf0, "   ");
+	if (obs.x <= 1){
+		genobs();
+		collected = 0;
+		return;
+	}
+	obs.x -= obs.speed;
+	if (obs.x >= BOUNDX - 1){
+		return;
+	}
+	else{
+		for(uint8_t n=0; n<3 && n+obs.x<BOUNDX; n++) {
+			//color[obs.x+n][obs.y] = 0xf0;
+			if (scr[obs.x+n][obs.y] == ' ' || scr[obs.x+n][obs.y] == '|' || scr[obs.x+n][obs.y] == '@')
+				scr[obs.x+n][obs.y] = '<';
+			else{
+				health -= 15;
+			}
+		}
+	}
+}
+
+void gencure(){
+	cure.x = BOUNDX + 4;
+	cure.y = (rand() % (FLOOR - 2) + 2) ;
+	cure.speed = obs.speed % 4 + 1;
+}
+
+void print_cure(){
+	msg(cure.x,cure.y , 0xf0, "   ");
+	if (cure.x <= 1){
+		gencure();
+		return;
+	}
+	cure.x -= cure.speed;
+	if (cure.x >= BOUNDX - 1){
+		return;
+	}
+	else{
+		//for(uint8_t n=0; n<3 && n+cure.x<BOUNDX; n++) {
+
+		if (scr[cure.x][cure.y] == ' ' || scr[cure.x][cure.y] == '|'){
+			color[cure.x][cure.y] = 0xe0;
+			scr[cure.x][cure.y] = '@';
+		}else{
+			health += 10;
+			collected = 1;
+			ccol += 1;
+			msg(cure.x,cure.y , 0xf0, "   ");
+			cure.x = 0;
+		}
+	}
+}
+
+void player_act(){
+	draw_player();
+}
+
+
+void collision(){
+	char buff[30];
+	msg(obs.x-1, obs.y - 1 , 0x10, "\\ /");
+	msg(obs.x-1, obs.y + 1 , 0x10, "/ \\");
+	msg(obs.x, obs.y , 0x10, "*");
+
+	sprintf(buff, "you saved %d people", ccol);
+	msg(obs.x, obs.y , 0x10, "*");
+	msg(obs.x, obs.y - 4 , 0x1f, buff);
+	msg(obs.x, obs.y - 3 , 0x1f, "   but you died    ");
+	msg(obs.x, obs.y - 2,  0x1f, "want to try again? ");
+}
+
+void update(char action){
+	clear_player();
+	if (action == 'w' && player.state_count == 0){
+		player.state_count = 11;
+	}else if(action == 's'){
+		player.ht = 1;
+		player.y += 2;
+	}else if(action == 'a' && player.x > 1){
+		player.x -= 2;
+	}else if(action == 'd' && player.x+6 < BOUNDX - 1){
+		player.x += 2;
+	}
+
+	if (player.state_count == 0)
+		player.state_count = 0;
+	else if (player.state_count > 7){
+		player.state_count -= 2; //1l 10 9 8 7
+		player.y -= 2;
+	}else if (player.state_count == 7){
+		player.state_count -= 1; //1l 10 9 8 7
+		player.y -= 1;
+	}else if (player.state_count == 6){ // 6
+		player.state_count -= 1;
+	}else if (player.state_count == 5){ // 6
+		player.state_count -= 1;
+		player.y += 1;
+	}else {
+		player.state_count -= 2; // 5 4 3 2 1
+		player.y += 2;
+	}
+	player_act();
+	print_obs();
+	if (!collected)
+		print_cure();
+
+	char buff[20];
+	sprintf(buff, "Health: %3d", health);
+	msg(20,0, 0x10, buff);
+	sprintf(buff, "Cures: %5d", ccol);
+	msg(45 ,0, 0xe0, buff);
+
+	if (health <= 0){
+		collision();
+		phase = SPLASH;
+	}
+	return;
+}
+
+void animate(){
+	if (phase == SPLASH){
+		while (!available());
+		getchar();
+		srandom(get_seed());
+	    clear();
+	    init();
+	    phase = RUNNING;
+	}
+	char act = '!';
+	if (phase == RUNNING){
+		while(available())
+			act = getchar();
+		if (act == 'q'){
+			splash();
+			//render();
+			phase = SPLASH;
+		}else if (act == 'p'){
+			freeze();
+		}else{
+			update(act);
+		}
+		render();
+		counter += 1;
+	}
+	return;
+}

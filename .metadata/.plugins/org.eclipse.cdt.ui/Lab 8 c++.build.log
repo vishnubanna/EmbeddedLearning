@@ -1,0 +1,6 @@
+20:33:55 **** Incremental Build of configuration Debug for project Lab 8 c++ ****
+make -j7 all 
+make: Nothing to be done for `all'.
+
+20:33:55 Build Finished (took 97ms)
+

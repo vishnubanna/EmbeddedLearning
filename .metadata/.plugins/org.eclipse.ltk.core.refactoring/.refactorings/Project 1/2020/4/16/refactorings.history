@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;Project 1/src/tty.c-template.txt&apos; to &apos;tty.c&apos;" description="Rename resource &apos;tty.c-template.txt&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="src/tty.c-template.txt" name="tty.c" stamp="1586847826307" updateReferences="true"/>
+</session>
